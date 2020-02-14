@@ -1,0 +1,31 @@
+import json
+import requests as req
+from lxml import etree
+from selenium import webdriver
+import os
+request_url = 'https://movie.douban.com/subject_search?search_text=¹¬Æé¿¥&cat=1002'
+src_xpath = "//div[@class='item-root']/a[@class='cover-link']/img[@class='cover']/@src"
+title_xpath = "//div[@class='item-root']/div[@class='detail']/div[@class='title']/a[@class='title-text']"
+picpath = "D:\\ÅÀ³æ\\¹¬Æé¿¥º£±¨"
+if not os.path.isdir(picpath):
+    os.mkdir(picpath)
+    
+def download(src, id):
+    dic = picpath + '/' +str(id)+ '.webp'
+    try:
+        pic = req.get(src,timeout=30)
+        fp = open(dic,'wb')
+        fp.write(pic.content)
+        fp.close()
+    except req.exceptions.ConnectionError:
+        print('Í¼Æ¬ÎÞ·¨ÏÂÔØ')
+        
+driver = webdriver.Chrome() 
+for i in range(0,75,15):
+    url = request_url + '&start=' + str(i)
+    driver.get(url)
+    html = etree.HTML(driver.page_source)
+    srcs = html.xpath(src_xpath)
+    titles = html.xpath(title_xpath)
+    for src,title in zip(srcs,titles):
+        download(src,title.text)

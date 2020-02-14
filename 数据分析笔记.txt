@@ -1,0 +1,21 @@
+查看一个路径是否存在：os.path.isdir(路径)
+创建一个路径os.mkdir(路径)
+
+·缺失值填充问题：
+对数据某一行利用均值填充：
+	df['age'].fillna(df['age'].mean(),inplace=True)
+
+利用高频数据进行填充：
+	age_maxf = train_features['age'].value_counts().index[0]
+	train_features['age'].fillna(age_maxf,inplace=True)
+·空行的问题：
+从read_csv()读取是会存在空行
+	df.dropna(how='all', inplace=True)删除完全空行
+·单位不统一情况
+
+read_csv()读取数据是路径出现中文报错情况，可使用
+read_csv('路径',engine='python')
+在读取时 设置为header=None 这时将认为你的csv数据中没有索引，将自动帮你生成一系列索引
+
+for中iterrows()可以拿到记录的索引
+df.at[]或者 loc[]都是定位[索引,列]

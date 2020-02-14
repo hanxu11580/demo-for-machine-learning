@@ -1,0 +1,17 @@
+from efficient_apriori import apriori
+import csv
+
+file_name = 'C:\\Users\\Icsm\\Desktop\\数据分析学习笔记\\apriori关联规则\\宁浩.csv'
+lists = csv.reader(open(file_name,'r',encoding='utf-8-sig'))
+data=[]
+
+for news in lists:
+    news = news[1:]
+    if news == []:
+        continue
+    data.append(news)
+
+itemsets,rules = apriori(data,min_support=0.3, min_confidence=1)
+
+print(itemsets)
+print(rules)

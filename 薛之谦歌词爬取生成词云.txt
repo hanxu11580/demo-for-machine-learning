@@ -1,0 +1,76 @@
+import requests
+import sys
+import re
+import os
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+import jieba
+from PIL import Image
+import numpy as np
+from lxml import etree
+import json
+
+def get_songs(artist_id):
+    headers = {
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+    'referer': 'https://music.163.com/',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'
+    }
+    id_list=[]
+    page_url = 'https://music.163.com/artist?id=' + artist_id
+    res = requests.get(page_url,headers=headers)
+    html = etree.HTML(res.text)
+    href_id = html.xpath('//div[@id="hotsong-list"]//a/@href')
+    name_list = html.xpath('//div[@id="hotsong-list"]//a/text()')
+    for href in href_id:
+        id_list.append(href[9:])
+    lists = zip(id_list,name_list)
+    return lists
+
+def get_lyric(id):
+    lyric_url = 'http://music.163.com/api/song/lyric?os=pc&id=' + id + '&lv=-1&kv=-1&tv=-1'
+    headers = {
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+        'referer': 'https://music.163.com/',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'
+    }
+    res = requests.get(lyric_url,headers=headers)
+    body = json.loads(res.text)
+    lyric = body['lrc']['lyric']
+    lyric = re.sub('[\d:.[\]]','',lyric)
+    return lyric
+    
+def remove_stop_word(f):
+    stop_words = ['作词', '作曲', '编曲', 'Arranger', '录音', '混音', '人声', 'Vocal', '弦乐', 'Keyboard', '键盘', '编辑', '助理', 'Assistants', 'Mixing', 'Editing', 'Recording', '音乐', '制作', 'Producer', '发行', 'produced', 'and', 'distributed']
+    for stop_word in stop_words:
+        f = f.replace(stop_word,'')
+    return f
+
+def create_word_cloud(f):
+    print('生成词云')
+    f = remove_stop_word(f)
+    cut_text = " ".join(jieba.cut(f,cut_all=False,HMM=True))
+    wc = WordCloud(
+        background_color = 'white',
+        font_path='C:\\Windows\\Fonts\\STHUPO.TTF',
+        max_words=100,
+        width=5000,
+        height=3000,
+    )
+    wordcloud = wc.generate(cut_text)
+    wordcloud.to_file('C:\\Users\\Icsm\\Desktop\\数据分析学习笔记\\词云\\薛之谦.jpg')
+    plt.imshow(wordcloud)
+    plt.axis('off')
+    plt.show()
+artist_id = '5781'
+all_words=''
+lists = get_songs(artist_id)
+for list in lists:
+    lyrics = get_lyric(list[0])
+    all_words  = all_words + ' ' + lyrics
+    
+create_word_cloud(all_words)
+
+
+    
+    

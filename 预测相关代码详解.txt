@@ -1,0 +1,48 @@
+利用pandas中read_csv()读取数据完后通过相关数据探索函数，对数据大体的结构类型进行相应的了解，为之后的数据清洗作出准备
+
+·info()可以知道数据有多少行、列、每列数据有多少个
+·describe()了解数据的个数。每列的平均值，方差，最小大值等
+·describe(include=['O']查看字符串类型的整体情况
+·head()查看前几行数据默认5
+·tail()查看最后几行数据默认
+
+·数据清洗问题：
+	age/fare 为年龄，票价 这个可以用平均值来填充
+	cabin 缺失率极大有近80%无法补齐
+	embarked取值有S\C\Q这个利用出现频率最大的来填充
+	这是利用print(train_data['Embarked'].value_count())查看这个3个值的个数，得知S占绝大部分，所以这里选择'S'来进行填充
+
+
+特征选择：
+	·剔除对生存相关无用的数据列：
+		乘客编号、name、cabin缺失值太多、ticket船票号码杂乱无规律等剔除
+	·然后将数据放入train_features,train_labels,test_features
+		features =['Pclass','Sex','Age','SibSp','Parch','Fare','Embarked']
+		train_features = train_data[features]
+		train_labels = train_data['Survived']
+		test_features = test_data[features]
+	·特征值中存在很多字符串，这对int计算没有什么好处。所以需要将sex/embarked字段转换为sex=male/sex=female/embarked=s/embarked=q/embarked=c字段并于0/1来表示乘客性别和入港港口号
+	这个里利用sklearn包中
+	from sklearn.feature_extraction import DictVectorizer
+	dvec = DictVectorizer(sparse=False)
+	train_features=devc.fit_transform(train_features.to_dict(orient='record'))转换
+
+·建立决策树模型：这里利用DecisionTreeClassifier(criterion='entropy')指的是ID3算法
+·模型预测及评估：
+	因为没有真实预测的结果，所有采用下面2个评估方案
+	·1、利用训练集中数据进行模型的评估
+		acc_decision_tree = round(clf.score(train_features,train_labels),6)但不准确
+	·2、利用K折交叉验证：
+		1、将数据分为K份
+		2、一份最为测试数据，其余作为训练数据，并计算准确率
+		3、使用不同测试集重复2
+		from sklearn.model_selection import cross_val_score
+		np.mean(cross_val_score(clf,train_features,train_labels,cv=10))分成10份（推荐使用）
+
+·决策树可视化：
+	利用graphviz
+	from sklearn import tree
+	import graphviz
+	dot_data = tree.export_graphviz(clf,out_file=None)
+	graph = graphviz.Source(dot_data)
+	graph.view()

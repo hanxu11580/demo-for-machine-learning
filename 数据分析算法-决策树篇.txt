@@ -1,0 +1,65 @@
+·前言：
+	步骤：构造决策数->剪枝
+	而期间会出现某些情况：
+		如过拟合：因为所用的数据均是样本数据，无法完全带代替全部数据的属性特点，这样会过于死板
+	剪枝又分：预剪枝、后剪枝
+	
+	构造决策树->关键的3点：
+		1、选择根节点
+		2、选择后继节点
+		3、什么时候结束并得出目标结果
+		
+	在选择节点问题是通过纯度和信息熵来确定的
+	其中又2个算法ID3（信息增益）和C4.5（信息增益率）
+	ID3：
+		基础的算法其对于信息缺失等会存在错误，而且会出现过拟合问题
+	C4.5:
+		使用广泛，其是ID3的改进版本
+		其使用了悲观剪枝
+		其可以计算连续属性处理：如湿度从中高低变为真实的适度值
+		其可以处理缺失数据的问题，因为其采用的信息增益率，如果信息缺失其权重比例同样变小，索引不会产生太大的影响
+
+	ID3算法详情：
+	首先选择一个属性作为根节点：然后算出其信息熵 下面以苹果好不好为例：苹果有属性红和大
+		ent(D)=-(好概率*log2(好概率)+不好概率*log2(不好概率))
+		然后分子集：红为D1，不红为D2。分别计算D1和D2的信息熵
+		然后分别求D1和D2占D的比例 * D1和D2的信息熵两者相加。
+		最后ent(D)-上面所求的。从而得到信息增益，这得到Gain(D,红)
+		然后算其他的属性最为根节点的信息增益，选取最大的最为根节点
+
+·CART（分类回归树）:
+	1、分类树：处理离散数据，返回的结果是样本的分类
+	2、回归树：对连续型数值进行预测，返回的是一个数值
+	·CART分类树：
+		利用基尼系数来衡量（基尼系数是用来衡量一个国家贫富差距如果大于0.4表示差距大，越小说明差距越小）
+		当基尼系数越小，说明样本差异性越小，不确定性越低。分类过程就是一个不确定性变低的过程，所以我们一般取基尼系数小的属性进行分类
+		·基尼系数如何计算：
+		GINI(D,A)=(D1/D)*GINI(D1)+(D2/D)*GINI(D2)以此类推
+		其中GINI(D1)=1-(各类别概率的平方之和(+))
+		·python中sklearn如何计算：
+		from sklearn.tree import DecisionTreeClassifier
+		from sklearn.metrics import accuracy_score
+		clf = DecisionTreeClassifier(criterion='gini')创建初始化CART分类树，这样你就可以开始训练了
+		clf = clf.fit(train_features,train_labels)将训练集的特征值和分类标识作为参数进行拟合得到CART分类树
+		clf.predict(test_features)传入测试集特征值得到预测结果
+		accuracy_score(test_labels,test_predict)测试集预测结果和实际结果得到准确率
+
+·CART回归树：
+	回归树用以下2个值来衡量
+		1、|x-u|其中u为所有样本的均值	对应 最小绝对偏差
+		2、(1/n)*所有样本值的方差之和	对应 最小二乘偏差(常见)
+		·python中如何计算：
+		from sklearn.metrics import mean_squared_error,mean_absolute_error
+		from sklearn.tree import DecisionTreeRegressor
+		
+		dtr = DecisionTreeRegressor()创建回归树,你可开始训练它了
+		dtr.fit(train_features, train_price)拟合得到回归树
+		predict_price = dtr.predict(test.features)预测得到预测结果
+		最后利用模型评价指标
+		mean_squared_error(test_price,predict_price)回归树最小绝对偏差 
+		mean_absolute_error(test_price,predict_price)回归树最小二乘偏差
+
+总结：决策树就是利用特征数据通过决策树来进行预测
+	
+	
+

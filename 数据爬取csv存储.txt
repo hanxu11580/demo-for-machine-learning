@@ -1,0 +1,48 @@
+from lxml import etree
+import time
+from efficient_apriori import apriori
+import time
+from selenium import webdriver
+import csv
+
+driver = webdriver.Chrome()
+director = u'宁浩'
+movie_lists=[]
+actor_lists = []
+file_name = 'C:\\Users\\Icsm\\Desktop\\数据分析学习笔记\\apriori关联规则\\'+director+'.csv'
+out = open(file_name,'w', newline='', encoding='utf-8-sig')
+csv_write = csv.writer(out,dialect='excel')
+flags = []
+for i in range(3):
+    url = 'https://search.douban.com/movie/subject_search?search_text='+actor+'&cat=1001&start={}'.format(i*15)
+    driver.get(url)
+    time.sleep(1)
+    html = driver.find_element_by_xpath("//*").get_attribute("outerHTML")
+    html = etree.HTML(html)
+    if i==0:
+        for j in range(3,18):
+            movie_list = html.xpath('//*[@id="root"]/div/div[2]/div[1]/div[1]/div[{}]/div[1]/div/div[1]/a/text()'.format(j))
+            actor_list = html.xpath('//*[@id="root"]/div/div[2]/div[1]/div[1]/div[{}]/div[1]/div/div[4]/text()'.format(j))
+            movie_lists += movie_list
+            actor_lists += actor_list
+    else:
+        for j in range(1,16):
+            movie_list = html.xpath('//*[@id="root"]/div/div[2]/div[1]/div[1]/div[{}]/div[1]/div/div[1]/a/text()'.format(j))
+            actor_list = html.xpath('//*[@id="root"]/div/div[2]/div[1]/div[1]/div[{}]/div[1]/div/div[4]/text()'.format(j))
+            movie_lists += movie_list
+            actor_lists += actor_list
+        
+movie_lists = [movie.strip().replace('\u200e','') for movie in movie_lists]
+actor_lists = [name.strip().replace(' ','').split('/') for name in actor_lists]
+for movie_name,actors in zip(movie_lists,actor_lists):
+    if actors is None:
+        continue
+    if actors[0] == director:
+        flags += movie_name
+        actors[0] = movie_name
+        csv_write.writerow(actors)
+out.close()
+        
+
+
+
